@@ -7,39 +7,48 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import com.example.journalapp.entity.JournalEntry;
+import com.example.journalapp.repository.JournalEntryRepository;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/journal")
-class JournalEntryController {
-    private Map<Long, JournalEntry> journalEntries = new HashMap<>();
+public class JournalEntryController {
+    private final JournalEntryRepository journalEntryRepository;
 
-    @GetMapping("/abc")
-    public List<JournalEntry> getAll() { // http://localhost:8080/journal GET
-        return new ArrayList<>(journalEntries.values());
+    public JournalEntryController(JournalEntryRepository journalEntryRepository) {
+        this.journalEntryRepository = journalEntryRepository;
+    }
 
+    @GetMapping
+    public List<JournalEntry> getAll() {
+        return journalEntryRepository.findAll();
     }
 
     @PostMapping
-    public boolean createEntry(@RequestBody JournalEntry myentry) { // http://localhost:8080/journal POST
-
-        journalEntries.put(myentry.getId(), myentry);
-        return true;
+    public ResponseEntity<JournalEntry> createEntry(@RequestBody JournalEntry entry) {
+        JournalEntry savedEntry = journalEntryRepository.save(entry);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedEntry);
     }
 
     @GetMapping("/{id}")
-    public JournalEntry getById(@PathVariable Long id) {
-        return journalEntries.get(id);
+    public ResponseEntity<JournalEntry> getById(@PathVariable String id) {
+        return journalEntryRepository.findById(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")
-    public JournalEntry deleteById(@PathVariable Long id) {
-        return journalEntries.remove(id);
+    public ResponseEntity<Void> deleteById(@PathVariable String id) {
+        if (!journalEntryRepository.existsById(id)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        journalEntryRepository.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 }

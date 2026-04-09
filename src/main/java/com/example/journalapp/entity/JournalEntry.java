@@ -1,28 +1,17 @@
 package com.example.journalapp.entity;
 
+import lombok.Data;
+import java.util.Date;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
-
+@Document(collection = "journal_entries")
+@Data
 public class JournalEntry {
-    private long id;
+    @Id
+    private String id;
     private String title;
-    public String content;
-    public long getId() {
-        return id;
-    }
-    public String getTitle() {
-        return title;
-    }
-    public String getContent() {
-        return content;
-    }
-    public void setId(long id) {
-        this.id = id;
-    }
-    public void setTitle(String title) {
-        this.title = title;
-    }
-    public void setContent(String content) {
-        this.content = content;
-    }
-    
+    private String content;
+    private Date date;
+
 }
